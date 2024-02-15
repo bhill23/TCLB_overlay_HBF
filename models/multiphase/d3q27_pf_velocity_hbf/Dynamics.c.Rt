@@ -1323,7 +1323,7 @@ CudaDeviceFunction void <?R C(my_pressure_boundaries[ii])?>(){
 <?R
 }
 ?>
-
+/*
 CudaDeviceFunction void MovingNWall(){
 	// Experimental, use with care!
 
@@ -1339,7 +1339,7 @@ CudaDeviceFunction void MovingNWall(){
 	g14 = g7  - VelocityX/36.0;
 	g18 = g15 - VelocityX/9.0;
 	{
-		<?R ZouHeRewrite(EQ_h, h, c(1,0,0),"pressure", rhs=PV("PhaseField")) ?>
+		<?R #ZouHeRewrite(EQ_h, h, c(1,0,0),"pressure", rhs=PV("PhaseField")) ?>
 	}
 
 	//	h4  = h3 ;
@@ -1364,9 +1364,10 @@ CudaDeviceFunction void MovingSWall(){
 	g7  = g14 + VelocityX/36.0;
 	g15 = g18 + VelocityX/9.0;
 	{
-		<?R ZouHeRewrite(EQ_h, h, c(1,0,0),"pressure", rhs=PV("PhaseField")) ?>
+		<?R #ZouHeRewrite(EQ_h, h, c(1,0,0),"pressure", rhs=PV("PhaseField")) ?>
 	}
 }
+*/
 
 CudaDeviceFunction void BounceBack(){
 	real_t tmp;
@@ -1436,12 +1437,12 @@ CudaDeviceFunction void updateBoundary(){
 		<?R
         }
         ?>
-		case NODE_MovingWall_N:
-			MovingNWall();
-			break;
-		case NODE_MovingWall_S:
-			MovingSWall();
-			break;
+		// case NODE_MovingWall_N:
+		// 	MovingNWall();
+		// 	break;
+		// case NODE_MovingWall_S:
+		// 	MovingSWall();
+		// 	break;
 		#ifdef OPTIONS_OutFlow
 			case NODE_EConvect:
 				EConvect();

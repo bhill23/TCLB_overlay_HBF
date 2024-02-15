@@ -249,11 +249,10 @@ if (TRUE){
         AddNodeType(name=dotR_my_velocity_boundaries[ii], group="BOUNDARY")
         AddNodeType(name=dotR_my_pressure_boundaries[ii], group="BOUNDARY")
     }
-	AddNodeType(name="MovingWall_N", group="BOUNDARY")
-	AddNodeType(name="MovingWall_S", group="BOUNDARY")
+	# AddNodeType(name="MovingWall_N", group="BOUNDARY")
+	# AddNodeType(name="MovingWall_S", group="BOUNDARY")
 	AddNodeType(name="Solid", group="BOUNDARY")
 	AddNodeType(name="Wall", group="BOUNDARY")
-	# AddNodeType(name="BGK", group="COLLISION")
 	AddNodeType(name="MRT", group="COLLISION")
 	if (Options$OutFlow){
 		AddNodeType(name="ENeumann", group="BOUNDARY")
