@@ -1542,30 +1542,30 @@ CudaDeviceFunction void updateTrackers(real_t C){
                 }
 		    }
 			break;
-		case NODE_Spiketrack:
-			if (C < 0.5 && PhaseF(0,1,0) > 0.5)
-			{
-				location = Y + (C-0.5)/(C-PhaseF(0,1,0));
-				AddToRTISpike(location);
-			}
-			break;
-		case NODE_Saddletrack:
-			if (C < 0.5 && PhaseF(0,1,0) > 0.5)
-			{
-				location = Y + (C-0.5)/(C-PhaseF(0,1,0));
-				AddToRTISaddle(location);
-			}
-			break;
-		case NODE_Bubbletrack:
-			if (C < 0.5 && PhaseF(0,1,0) > 0.5)
-			{
-				location = Y + (C-0.5)/(C-PhaseF(0,1,0));
-				AddToRTIBubble(location);
-			}
-			break;
-		case NODE_LogP:
-			AddToVelMag(sqrt(U*U + V*V + W*W));
-			break;
+		// case NODE_Spiketrack:
+		// 	if (C < 0.5 && PhaseF(0,1,0) > 0.5)
+		// 	{
+		// 		location = Y + (C-0.5)/(C-PhaseF(0,1,0));
+		// 		AddToRTISpike(location);
+		// 	}
+		// 	break;
+		// case NODE_Saddletrack:
+		// 	if (C < 0.5 && PhaseF(0,1,0) > 0.5)
+		// 	{
+		// 		location = Y + (C-0.5)/(C-PhaseF(0,1,0));
+		// 		AddToRTISaddle(location);
+		// 	}
+		// 	break;
+		// case NODE_Bubbletrack:
+		// 	if (C < 0.5 && PhaseF(0,1,0) > 0.5)
+		// 	{
+		// 		location = Y + (C-0.5)/(C-PhaseF(0,1,0));
+		// 		AddToRTIBubble(location);
+		// 	}
+		// 	break;
+		// case NODE_LogP:
+		// 	AddToVelMag(sqrt(U*U + V*V + W*W));
+		// 	break;
 	}
 }
 //#############//

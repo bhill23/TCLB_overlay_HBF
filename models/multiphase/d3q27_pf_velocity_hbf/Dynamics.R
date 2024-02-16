@@ -224,20 +224,20 @@ if (TRUE){
 ##################################
 	AddSetting(name="xyzTrack", default=1,comment='x<-1, y<-2, z<-3')
 	AddNodeType("Centerline",group="ADDITIONALS")
-	AddNodeType(name="Spiketrack", group="ADDITIONALS")
-	AddNodeType(name="Saddletrack", group="ADDITIONALS")
-	AddNodeType(name="Bubbletrack", group="ADDITIONALS")
+	# AddNodeType(name="Spiketrack", group="ADDITIONALS")
+	# AddNodeType(name="Saddletrack", group="ADDITIONALS")
+	# AddNodeType(name="Bubbletrack", group="ADDITIONALS")
 	AddGlobal("InterfacePosition0", op="MAX", comment='trackPosition',unit="m")
 	AddGlobal("InterfacePosition1", op="MAX", comment='trackPosition',unit="m")
 	AddGlobal("Vfront",comment='velocity infront of bubble',unit="m/s")
 	AddGlobal("Vback",comment='velocity behind bubble',unit="m/s")
-	AddGlobal("RTISpike", op="MAX", comment='SpikeTracker ',unit="m")
-	AddGlobal("RTIBubble",op="MAX", comment='BubbleTracker',unit="m")
-	AddGlobal("RTISaddle",op="MAX", comment='SaddleTracker',unit="m")
+	# AddGlobal("RTISpike", op="MAX", comment='SpikeTracker ',unit="m")
+	# AddGlobal("RTIBubble",op="MAX", comment='BubbleTracker',unit="m")
+	# AddGlobal("RTISaddle",op="MAX", comment='SaddleTracker',unit="m")
 	AddGlobal("XLocation", comment='tracking of x-centroid of the gas regions in domain', unit="m")
 	# AddGlobal(name="DropFront",	op="MAX",  comment='Highest location of droplet', unit="m")
-	AddNodeType(name="LogP", group="ADDITIONALS")
-	AddGlobal(name="VelMag", comment='Velocity magnitude for steady state determination', unit="m/s")
+	# AddNodeType(name="LogP", group="ADDITIONALS")
+	# AddGlobal(name="VelMag", comment='Velocity magnitude for steady state determination', unit="m/s")
 ##########################
 ########NODE TYPES########
 ##########################
