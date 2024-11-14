@@ -14,6 +14,14 @@ AddDensity(name="Init_UY_External", group="init", comment="free stream velocity"
 AddDensity(name="Init_UZ_External", group="init", comment="free stream velocity", parameter=TRUE)
 AddDensity(name="Init_PhaseField_External", group="init", dx=0,dy=0,dz=0, parameter=TRUE)
 
+# for initialising the normals
+AddDensity(name="Init_nwx_external", group="init_normals", dx=0,dy=0,dz=0, parameter=TRUE)
+AddDensity(name="Init_nwy_external", group="init_normals", dx=0,dy=0,dz=0, parameter=TRUE)
+AddDensity(name="Init_nwz_external", group="init_normals", dx=0,dy=0,dz=0, parameter=TRUE)
+
+# Add extra density for setting the pressure on boundaries
+AddDensity(name="Pressure_external", group="Vel", dx=0, dy=0, dz=0, parameter=TRUE)
+
 # macroscopic params
 # - consider migrating to fields
 AddDensity(name="pnorm", dx=0, dy=0, dz=0, group="Vel")
@@ -107,6 +115,7 @@ if (Options$geometric){
 } else {
     AddField("PhaseF",stencil3d=1, group="PF")
 }
+
 AddDensity(name="Iterations", dx=0, dy=0, dz=0, group="Vel")
 AddDensity(name="StrainRate", dx=0, dy=0, dz=0, group="HBF")
 AddDensity(name="Tau", dx=0, dy=0, dz=0, group="HBF")
@@ -127,16 +136,21 @@ load_phase     = c(load_phase,    "HBF")
 	AddStage("calcPhase", "calcPhaseF", save=Fields$name=="PhaseF", load=DensityAll$group %in% load_phase)
 	AddStage("BaseIter" , "Run", save=Fields$group %in% save_iteration, load=DensityAll$group %in% load_iteration )
 	AddStage(name="InitFromFieldsStage", load=DensityAll$group %in% "init",read=FALSE, save=Fields$group %in% save_initial_PF)
+    AddStage(name="InitFromFieldsStageWithNormals", load=DensityAll$group %in% c("init_normals", "init"),read=FALSE, save=Fields$group %in% c("nw", save_initial_PF))
+
 	# STAGES FOR VARIOUS OPTIONS
 	if (Options$geometric){
-		AddStage("WallInit_CA"  , "Init_wallNorm", save=Fields$group %in% c("nw", "solid_boundary", extra_fields_to_load_for_bc))
+
+		AddStage("WallInit_Real"  , "Init_real_wallNorm", save=Fields$group %in% c("nw"))
+		AddStage("WallInit_CA"  , "Init_wallNorm", load=DensityAll$group %in% c("nw"), save=Fields$group %in% c("nw", "solid_boundary", extra_fields_to_load_for_bc))
 		AddStage("calcWall_CA"  , "calcWallPhase", save=Fields$name %in% c("PhaseF"), load=DensityAll$group %in% c("nw", "gradPhi", "PF", "solid_boundary", extra_fields_to_load_for_bc))
 
 		AddStage('calcPhaseGrad', "calcPhaseGrad", load=DensityAll$group %in% c("nw", "PF", "solid_boundary"), save=Fields$group=="gradPhi")
 		AddStage('calcPhaseGrad_init', "calcPhaseGrad_init", load=DensityAll$group %in% c("nw", "PF", "solid_boundary"), save=Fields$group=="gradPhi")
 		AddStage("calcWallPhase_correction", "calcWallPhase_correction", save=Fields$name=="PhaseF", load=DensityAll$group %in% c("nw", "solid_boundary"))
 	} else {
-		AddStage("WallInit" , "Init_wallNorm", save=Fields$group %in% c("nw", "solid_boundary", extra_fields_to_load_for_bc))
+		AddStage("WallInit_Real"  , "Init_real_wallNorm", save=Fields$group %in% c("nw"))
+		AddStage("WallInit" , "Init_wallNorm", load=DensityAll$group %in% c("nw"), save=Fields$group %in% c("nw", "solid_boundary", extra_fields_to_load_for_bc))
 		AddStage("calcWall" , "calcWallPhase", save=Fields$name=="PhaseF", load=DensityAll$group %in% c("nw", "solid_boundary", extra_fields_to_load_for_bc))
 		AddStage("calcWallPhase_correction", "calcWallPhase_correction", save=Fields$name=="PhaseF", load=DensityAll$group %in% c("nw", "solid_boundary"))
 	}
@@ -147,12 +161,14 @@ load_phase     = c(load_phase,    "HBF")
 	if (Options$geometric) {
         calcGrad <- if (Options$isograd)  "calcPhaseGrad" else "calcPhaseGrad_init"
         AddAction("Iteration", c("BaseIter", "calcPhase",  calcGrad, "calcWall_CA", "calcWallPhase_correction"))
-	    AddAction("Init"     , c("PhaseInit","WallInit_CA" , "calcPhaseGrad_init"  , "calcWall_CA", "calcWallPhase_correction", "BaseInit"))
-	    AddAction("InitFields"     , c("InitFromFieldsStage","WallInit_CA" , "calcPhaseGrad_init", "calcWall_CA", "calcWallPhase_correction", "BaseInit"))
+	    AddAction("Init"     , c("PhaseInit","WallInit_Real","WallInit_CA" , "calcPhaseGrad_init"  , "calcWall_CA", "calcWallPhase_correction", "BaseInit"))
+	    AddAction("InitFields"     , c("InitFromFieldsStage","WallInit_Real","WallInit_CA" , "calcPhaseGrad_init", "calcWall_CA", "calcWallPhase_correction", "BaseInit"))
+	    AddAction("InitFieldsWithNormals"     , c("InitFromFieldsStageWithNormals","WallInit_CA" , "calcPhaseGrad_init", "calcWall_CA", "calcWallPhase_correction", "BaseInit"))
     } else {
 		AddAction("Iteration", c("BaseIter", "calcPhase", "calcWall", "calcWallPhase_correction"))
-		AddAction("Init"     , c("PhaseInit","WallInit" , "calcWall","calcWallPhase_correction", "BaseInit"))
-		AddAction("InitFields", c("InitFromFieldsStage","WallInit" , "calcWall", "calcWallPhase_correction", "BaseInit"))
+		AddAction("Init"     , c("PhaseInit", "WallInit_Real", "WallInit" , "calcWall","calcWallPhase_correction", "BaseInit"))
+		AddAction("InitFields", c("InitFromFieldsStage","WallInit_Real","WallInit" , "calcWall", "calcWallPhase_correction", "BaseInit"))
+		AddAction("InitFieldsWithNormals", c("InitFromFieldsStageWithNormals", "WallInit" , "calcWall", "calcWallPhase_correction", "BaseInit"))
 	}
 #######################
 ########OUTPUTS########
@@ -189,6 +205,7 @@ load_phase     = c(load_phase,    "HBF")
 	AddSetting(name="omega_phi", comment='one over relaxation time (phase field)')
 	AddSetting(name="M", omega_phi='1.0/(3*M+0.5)', default=0.02, comment='Mobility')
 	AddSetting(name="sigma", comment='surface tension')
+	    AddSetting(name="UseExternalPressure", default=0, comment='Use external pressure (set from RunR)')
 	AddSetting(name="fixedIterator", default=10, comment='to resolve implicit relation of viscous force/ and non-Newtonian viscosity')
   	AddSetting(name="Washburn_start", default="0", comment='Start of washburn gas phase')
   	AddSetting(name="Washburn_end", default="0", comment='End of washburn gas phase')
@@ -241,6 +258,7 @@ load_phase     = c(load_phase,    "HBF")
 	AddSetting(name="VelocityY", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 	AddSetting(name="VelocityZ", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 	AddSetting(name="Pressure" , default=0.0, comment='inlet/outlet/init density', zonal=T)
+    AddSetting(name='InvasionDrainage', default=0, comment="0 nothing, anything bigger is invasion/drainage case")
 	AddSetting(name="GravitationX", default=0.0, comment='applied (rho)*GravitationX')
 	AddSetting(name="GravitationY", default=0.0, comment='applied (rho)*GravitationY')
 	AddSetting(name="GravitationZ", default=0.0, comment='applied (rho)*GravitationZ')
@@ -257,25 +275,30 @@ load_phase     = c(load_phase,    "HBF")
 	AddNodeType(name="Bubbletrack", group="ADDITIONALS")
 	AddGlobal("InterfacePosition0", op="MAX", comment='trackPosition',unit="m")
 	AddGlobal("InterfacePosition1", op="MAX", comment='trackPosition',unit="m")
-    # AddGlobal("InterfaceYTop", op="MAX", comment="Track top position of the interface in Y direction")
+    AddGlobal("InterfaceYTop", op="MAX", comment="Track top position of the interface in Y direction")
 	AddGlobal("Vfront",comment='velocity infront of bubble')
 	AddGlobal("Vback",comment='velocity behind bubble')
 	AddGlobal("RTISpike", op="MAX", comment='SpikeTracker ')
 	AddGlobal("RTIBubble",op="MAX", comment='BubbleTracker')
 	AddGlobal("RTISaddle",op="MAX", comment='SaddleTracker')
 	AddGlobal("XLocation", comment='tracking of x-centroid of the gas regions in domain', unit="m")
-	# AddGlobal(name="DropFront",	op="MAX",  comment='Highest location of droplet', unit="m")
+	AddGlobal(name="DropFront",	op="MAX",  comment='Highest location of droplet', unit="m")
 ##########################
 ########NODE TYPES########
 ##########################
 	AddNodeType("Smoothing",group="ADDITIONALS")
 	AddNodeType(name="flux_nodes", group="ADDITIONALS")
+    # the first one are "fflux"
+    pressure_boundary_types = c("", "open", "fpf")
 	dotR_my_velocity_boundaries = paste0(c("N","E","S","W","F","B"),"Velocity")
-    dotR_my_pressure_boundaries = paste0(c("N","E","S","W","F","B"),"Pressure")
+    dotR_my_pressure_boundaries = outer(paste0(c("N","E","S","W","F","B"),"Pressure"), pressure_boundary_types, FUN  = paste, sep="")
     for (ii in 1:6){
         AddNodeType(name=dotR_my_velocity_boundaries[ii], group="BOUNDARY")
+    }
+    for (ii in 1:length(dotR_my_pressure_boundaries)) {
         AddNodeType(name=dotR_my_pressure_boundaries[ii], group="BOUNDARY")
     }
+
 	AddNodeType(name="MovingWall_N", group="BOUNDARY")
 	AddNodeType(name="MovingWall_S", group="BOUNDARY")
 	AddNodeType(name="Solid", group="BOUNDARY")
@@ -314,3 +337,5 @@ load_phase     = c(load_phase,    "HBF")
 	AddGlobal(name="FluxX",comment='flux in x direction for flux_nodes', unit="1")
 	AddGlobal(name="FluxY",comment='flux in y direction for flux_nodes', unit="1")
 	AddGlobal(name="FluxZ",comment='flux in z direction for flux_nodes', unit="1")
+    AddGlobal(name="LiquidSaturation", comment="Liquid saturation(number of liquid nodes)", unit="1")
+    AddGlobal(name="GasSaturation", comment="Gas saturation(number of gas nodes)", unit="1")
